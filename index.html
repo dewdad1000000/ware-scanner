@@ -189,17 +189,7 @@ async function startCamera() {
       cameraId,
       {
         fps: 10,
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-
-          const width = Math.floor(viewfinderWidth * 0.8);
-          const height = Math.floor(viewfinderHeight * 0.45);
-
-          return {
-            width: width,
-            height: height
-          };
-        }
-      },
+     
 
       function(decodedText) {
      beep(); 
