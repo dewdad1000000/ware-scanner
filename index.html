@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Warehouse Scanner</title>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111827;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .app {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .panel {
+      background: #1f2937;
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    #reader {
+      width: 100%;
+      background: black;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .blue {
+      background: #0ea5e9;
+      color: white;
+    }
+
+    .red {
+      background: #ef4444;
+      color: white;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #6b7280;
+      font-size: 16px;
+    }
+
+    #status {
+      margin-top: 12px;
+      padding: 12px;
+      background: #374151;
+      border-radius: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <h1>Warehouse Scanner</h1>
+
+  <div class="panel">
+    <strong>Current Location</strong>
+    <div id="location">No shelf selected</div>
+
+    <button class="blue" onclick="scanLocation()">
+      Scan Location
+    </button>
+
+    <button class="red" onclick="finishShelf()">
+      Finish Shelf
+    </button>
+  </div>
+
+  <div class="panel">
+
+    <div id="reader"></div>
+
+    <button class="blue" onclick="startCamera()">
+      Start Camera
+    </button>
+
+    <p>If camera scanning is unavailable, type the code below.</p>
+
+    <input id="manualCode"
+           placeholder="Enter barcode or QR value">
+
+    <button onclick="useTypedCode()">
+      Use Typed Code
+    </button>
+
+    <div id="status">Ready</div>
+
+  </div>
+
+</div>
+
+<script>
+
+let scanner = null;
+let scannerRunning = false;
+let mode = "inventory";
+let currentLocation = "";
+
+async function startCamera() {
+
+  const status = document.getElementById("status");
+
+  try {
+
+    if (scannerRunning) {
+      status.textContent = "Camera is already running.";
+      return;
+    }
+
+    scanner = new Html5Qrcode("reader");
+
+    const cameras = await Html5Qrcode.getCameras();
+
+    if (!cameras || cameras.length === 0) {
+      status.textContent = "No camera found.";
+      return;
+    }
+
+    let cameraId = cameras[0].id;
+
+    const rearCamera = cameras.find(camera =>
+      /back|rear|environment/i.test(camera.label)
+    );
+
+    if (rearCamera) {
+      cameraId = rearCamera.id;
+    }
+
+    await scanner.start(
+      cameraId,
+      {
+        fps: 10,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+
+          const width = Math.floor(viewfinderWidth * 0.8);
+          const height = Math.floor(viewfinderHeight * 0.45);
+
+          return {
+            width: width,
+            height: height
+          };
+        }
+      },
+
+      function(decodedText) {
+        acceptCode(decodedText);
+      },
+
+      function(errorMessage) {
+        // Normal scan misses are ignored.
+      }
+    );
+
+    scannerRunning = true;
+    status.textContent = "Camera ready — scan a code.";
+
+  } catch (error) {
+
+    status.textContent =
+      "Camera could not start: " +
+      (error.message || error);
+
+  }
+}
+
+function scanLocation() {
+  mode = "location";
+
+  document.getElementById("status").textContent =
+    "Scan the shelf/location QR code.";
+}
+
+function finishShelf() {
+
+  currentLocation = "";
+  mode = "inventory";
+
+  document.getElementById("location").textContent =
+    "No shelf selected";
+
+  document.getElementById("status").textContent =
+    "Shelf finished.";
+}
+
+function useTypedCode() {
+
+  const box = document.getElementById("manualCode");
+  const value = box.value.trim();
+
+  if (!value) {
+    document.getElementById("status").textContent =
+      "Enter a code first.";
+    return;
+  }
+
+  acceptCode(value);
+  box.value = "";
+}
+
+function acceptCode(code) {
+
+  if (mode === "location") {
+
+    currentLocation = code;
+
+    document.getElementById("location").textContent =
+      currentLocation;
+
+    document.getElementById("status").textContent =
+      "Location selected: " + currentLocation;
+
+    mode = "inventory";
+
+    return;
+  }
+
+  if (!currentLocation) {
+
+    document.getElementById("status").textContent =
+      "Scan a location first.";
+
+    return;
+  }
+
+  document.getElementById("status").textContent =
+    "Scanned inventory: " + code;
+
+}
+
+</script>
+
+</body>
+</html>
