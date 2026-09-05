@@ -137,7 +137,7 @@ function beep() {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-if (audioCtx.state === "suspend") {audioCtx.resume();
+if (audioCtx.state === "suspended") {audioCtx.resume();}
     const oscillator = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
 
