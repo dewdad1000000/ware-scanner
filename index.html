@@ -293,48 +293,7 @@ function acceptCode(code) {
     currentLocation;
 
 }
-async function startCamera() {
-  const status = document.getElementById("status");
 
-  try {
-    if (typeof Html5Qrcode === "undefined") {
-      status.textContent = "Camera scanner failed to load.";
-      return;
-    }
-
-    status.textContent = "Starting camera...";
-
-    const cameras = await Html5Qrcode.getCameras();
-
-    if (!cameras || cameras.length === 0) {
-      status.textContent = "No camera found.";
-      return;
-    }
-
-    const scanner = new Html5Qrcode("reader");
-
-    await scanner.start(
-      cameras[0].id,
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 }
-      },
-      function(decodedText) {
-        scanner.stop();
-        acceptCode(decodedText);
-      },
-      function(errorMessage) {
-        // Ignore normal scan misses.
-      }
-    );
-
-    status.textContent = "Camera ready - scan a code.";
-
-  } catch (error) {
-    console.error(error);
-    status.textContent = "Camera could not start: " + error;
-  }
-}
   
 </script>
 
