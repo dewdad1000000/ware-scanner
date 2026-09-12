@@ -166,15 +166,8 @@ async function startCamera() {
       return;
     }
 
-  scanner = new Html5Qrcode("reader", {
-  formatsToSupport: [
-    Html5QrcodeSupportedFormats.QR_CODE,
-    Html5QrcodeSupportedFormats.CODE_128,
-    Html5QrcodeSupportedFormats.CODE_39,
-    Html5QrcodeSupportedFormats.EAN_13,
-    Html5QrcodeSupportedFormats.UPC_A
-  ]
-});
+  scanner = new Html5Qrcode("reader");
+
 
     const cameras = await Html5Qrcode.getCameras();
 
