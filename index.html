@@ -289,9 +289,27 @@ function acceptCode(code) {
     return;
   }
 
+document.getElementById("status").textContent =
+  "Recording " + code + " to " + currentLocation + "...";
+
+fetch("https://script.google.com/macros/s/AKfycbxzSuizKIpPjDtzFk8Hf9YQvx7gymSPZeNdrKQ4Ga7ysxOR4BzwD1NEehkjR3cQZFKUjw/exec", {
+  method: "POST",
+  mode: "no-cors",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded"
+  },
+  body:
+    "inventoryId=" + encodeURIComponent(code) +
+    "&location=" + encodeURIComponent(currentLocation)
+})
+.then(function() {
   document.getElementById("status").textContent =
-    "Moved " + code + " to " +
-    currentLocation;
+    "Recorded " + code + " to " + currentLocation;
+})
+.catch(function(error) {
+  document.getElementById("status").textContent =
+    "Error recording scan.";
+});
 
 }
 
