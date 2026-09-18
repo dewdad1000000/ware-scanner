@@ -131,7 +131,8 @@ let scannerRunning = false;
 let mode = "inventory";
 let currentLocation =  "";
 let audioCtx = null;
-
+let lastScannedCode = "";
+let last ScanTime = 0;
 function beep() {
   try {
     if (!audioCtx) {
@@ -194,6 +195,17 @@ async function startCamera() {
         
 
       function(decodedText) {
+        const now = Date.now();
+
+        if (decodeText ===
+      lastScannedCode && now -
+      lastScanTime <3000) {
+          return;
+        }
+
+        lastScannedCode = decodedText;
+        lastScanTime = now
+        
      beep(); 
         acceptCode(decodedText);
       },
